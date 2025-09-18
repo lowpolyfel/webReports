@@ -16,4 +16,13 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/reports', reportsRouter);
 
+app.use((err, _req, res, _next) => {
+  console.error('[Server Error]', err);
+  res.status(err.status || 500).json({
+    error: 'INTERNAL_ERROR',
+    message: err.message || 'Unexpected error'
+  });
+});
+
+
 export default app;

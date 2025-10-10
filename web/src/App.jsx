@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
 import { getReports, createReport } from './api';
+// ⬇️ NUEVO
+import { getAvailableDates } from './api';
 
 export default function App() {
   const [items, setItems] = useState([]);
   const [title, setTitle] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  // ⬇️ NUEVO estado para fechas
+  const [dates, setDates] = useState([]);
 
   async function refresh() {
     setError('');
@@ -18,6 +23,18 @@ export default function App() {
   }
 
   useEffect(() => { refresh(); }, []);
+
+  // ⬇️ NUEVO: cargar fechas al montar
+  useEffect(() => {
+    (async () => {
+      try {
+        const d = await getAvailableDates();
+        setDates(d);
+      } catch (e) {
+        console.error('Error fechas:', e);
+      }
+    })();
+  }, []);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -37,29 +54,36 @@ export default function App() {
 
   return (
     <div style={{ maxWidth: 720, margin: '40px auto', fontFamily: 'system-ui, sans-serif' }}>
-      <h1>WebReports</h1>
-      <p style={{ color: '#666' }}>React + Node.js + MariaDB (Raspberry Pi)</p>
+            {/* ⬇️ NUEVO: Botones por fecha */}
+      <h2>Fechas disponibles</h2>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+        {dates.map(d => (
+          <button
+            key={d}
+            onClick={() => console.log('Seleccionada', d)}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 6,
+              background: '#0f172a',
+              color: '#e2e8f0',
+              border: '1px solid #334155',
+              cursor: 'pointer'
+            }}
+            title={`Ver reportes del ${d}`}
+          >
+            {new Date(d + 'T00:00:00').toLocaleDateString('es-MX', {
+              weekday: 'short', day: '2-digit', month: 'short'
+            })}
+          </button>
+        ))}
+        {!dates.length && <span style={{ color: '#888' }}>Sin fechas</span>}
+      </div>
+      {/* ⬆️ FIN NUEVO */}
 
-      <form onSubmit={onSubmit} style={{ display: 'flex', gap: 8 }}>
-        <input
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder="Nuevo reporte…"
-          disabled={busy}
-          style={{ flex: 1, padding: 8 }}
-        />
-        <button disabled={busy || !title.trim()}>{busy ? 'Guardando…' : 'Agregar'}</button>
-      </form>
 
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
 
-      <h2 style={{ marginTop: 24 }}>Reportes</h2>
-      <ul>
-        {items.map(r => (
-          <li key={r.id}>{r.title} <small style={{ color: '#888' }}>({new Date(r.created_at).toLocaleString()})</small></li>
-        ))}
-      </ul>
-    </div>
+         </div>
   );
 }
 

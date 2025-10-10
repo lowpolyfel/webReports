@@ -1,28 +1,23 @@
+// server/src/app.js
 import express from 'express';
 import cors from 'cors';
-import morgan from 'morgan';
-import { config } from './config/config.js';
-import reportsRouter from './routes/reports.routes.js';
+
+import datesRouter from './routes/dates.js';
+import reportsRouter from './routes/reports.js';
 
 const app = express();
-
-app.use(cors({ origin: config.cors.origin }));
+app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
 
-app.get('/api/health', (_req, res) => {
-    res.json({ ok: true, service: 'server', ts: new Date().toISOString() });
-});
+// Opcional: health
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-app.use('/api/reports', reportsRouter);
+// Montar rutas APIa:
+app.use('/api', datesRouter);
+app.use('/api', reportsRouter);
 
-app.use((err, _req, res, _next) => {
-  console.error('[Server Error]', err);
-  res.status(err.status || 500).json({
-    error: 'INTERNAL_ERROR',
-    message: err.message || 'Unexpected error'
-  });
-});
-
+// Si navegas a / (root) responderá 404 por diseño.
+// Si quieres una respuesta simple en '/', agrega:
+// app.get('/', (_req, res) => res.send('WebReports API'));
 
 export default app;

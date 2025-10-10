@@ -13,23 +13,25 @@ async function parseJSON(res) {
 }
 
 export async function getReports() {
-  const res = await fetch(`${API_BASE}/reports`);
-  if (!res.ok) {
-    const t = await res.text().catch(()=>'');
-    throw new Error(`GET /reports fallo (${res.status}): ${t.slice(0,200)}`);
-  }
-  return parseJSON(res);
+  const r = await fetch('/api/reports');
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
 }
 
 export async function createReport(title) {
-  const res = await fetch(`${API_BASE}/reports`, {
+  const r = await fetch('/api/reports', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title })
   });
-  if (!res.ok) {
-    const t = await res.text().catch(()=>'');
-    throw new Error(`POST /reports fallo (${res.status}): ${t.slice(0,200)}`);
-  }
-  return parseJSON(res);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
 }
+
+export async function getAvailableDates() {
+  const r = await fetch('/api/available-dates');
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const data = await r.json();
+  return data.dates || [];
+}
+

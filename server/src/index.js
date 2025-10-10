@@ -1,3 +1,4 @@
+// server/src/index.js
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,8 +9,13 @@ import { config } from './config/config.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function ensureSchema() {
-  const ddl = fs.readFileSync(path.join(__dirname, 'db', 'schema.sql'), 'utf8');
-  await pool.query(ddl);
+  const ddlPath = path.join(__dirname, 'db', 'schema.sql');
+  if (fs.existsSync(ddlPath)) {
+    const ddl = fs.readFileSync(ddlPath, 'utf8');
+    // Si tu schema.sql trae varias sentencias separadas por ';',
+    // tu pool debe tener multipleStatements:true (ver pool.js).
+    await pool.query(ddl);
+  }
 }
 
 async function start() {
